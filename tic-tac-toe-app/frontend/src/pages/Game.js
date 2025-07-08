@@ -39,7 +39,7 @@ const Game = () => {
 
   const { data, loading, error } = useQuery(GET_GAME, {
     variables: { id },
-    pollInterval: 2000, // كل 2 ثانية يحدث اللعبة
+    pollInterval: 2000,
   });
 
   const [makeMove] = useMutation(MAKE_MOVE);
@@ -55,6 +55,18 @@ const Game = () => {
     (isPlayerX && game.currentTurn === "X") ||
     (isPlayerO && game.currentTurn === "O");
 
+  // ✅ تحديد نص الحالة بناءً على status
+  let statusText = "";
+  console.log(game);
+
+  if (game.status === "finished") {
+    statusText = `Winner: ${game.winner}`;
+  } else if (game.status === "draw") {
+    statusText = "Game ended in a draw.";
+  } else {
+    statusText = isMyTurn ? "Your turn" : "Opponent's turn";
+  }
+
   const handleMove = async (x, y) => {
     try {
       await makeMove({ variables: { gameId: id, x, y } });
@@ -68,9 +80,7 @@ const Game = () => {
       <Typography variant="h5" mb={2}>
         Game with {game.playerX.username} vs {game.playerO.username}
       </Typography>
-      <Typography mb={2}>
-        {isMyTurn ? "Your turn" : "Opponent's turn"}
-      </Typography>
+      <Typography mb={2}>{statusText}</Typography>
       <Box display="grid" gridTemplateColumns="repeat(3, 80px)" gap={1}>
         {game.board.map((row, x) =>
           row.map((cell, y) => (
@@ -78,7 +88,9 @@ const Game = () => {
               key={`${x}-${y}`}
               variant="outlined"
               onClick={() => handleMove(x, y)}
-              disabled={!isMyTurn || cell !== ""}
+              disabled={
+                !isMyTurn || cell !== "" || game.status !== "in_progress"
+              }
               sx={{ height: "80px", fontSize: "24px" }}
             >
               {cell}

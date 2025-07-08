@@ -1,6 +1,63 @@
 const User = require("../models/User");
 const Game = require("../models/Game");
 const { producer } = require("../kafka/kafkaClient");
+const checkWinner = (board) => {
+  const lines = [
+    [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [1, 2],
+    ],
+    [
+      [2, 0],
+      [2, 1],
+      [2, 2],
+    ],
+    [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [0, 2],
+      [1, 2],
+      [2, 2],
+    ],
+    [
+      [0, 0],
+      [1, 1],
+      [2, 2],
+    ],
+    [
+      [0, 2],
+      [1, 1],
+      [2, 0],
+    ],
+  ];
+
+  for (const line of lines) {
+    const [a, b, c] = line;
+    if (
+      board[a[0]][a[1]] &&
+      board[a[0]][a[1]] === board[b[0]][b[1]] &&
+      board[a[0]][a[1]] === board[c[0]][c[1]]
+    ) {
+      return board[a[0]][a[1]]; // "X" أو "O"
+    }
+  }
+
+  return null;
+};
 
 const resolvers = {
   Query: {
@@ -112,15 +169,38 @@ const resolvers = {
 
       const currentSymbol = game.currentTurn;
       game.board[x][y] = currentSymbol;
-      game.currentTurn = currentSymbol === "X" ? "O" : "X";
 
-      // منطق التحقق من الفوز يضاف لاحقًا
+      // تحقق من الفائز
+      const winner = checkWinner(game.board);
+
+      if (winner) {
+        game.status = "finished";
+        game.winner = winner;
+      } else {
+        // تحقق من التعادل
+        const isDraw = game.board.flat().every((cell) => cell !== "");
+        if (isDraw) {
+          game.status = "draw";
+        } else {
+          // إذا لا يوجد فائز ولا تعادل، تابع اللعب
+          game.currentTurn = currentSymbol === "X" ? "O" : "X";
+        }
+      }
 
       await game.save();
 
       await producer.send({
         topic: "game_updates",
-        messages: [{ value: JSON.stringify({ gameId, board: game.board }) }],
+        messages: [
+          {
+            value: JSON.stringify({
+              gameId,
+              board: game.board,
+              status: game.status,
+              winner: game.winner,
+            }),
+          },
+        ],
       });
 
       return game.populate("playerX playerO spectators");
