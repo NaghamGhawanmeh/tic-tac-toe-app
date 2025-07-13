@@ -53,6 +53,7 @@ const Topbar = () => {
       });
 
       localStorage.removeItem("currentUser");
+      localStorage.removeItem("token");
       navigate("/");
     } catch (error) {
       console.error("Error updating status:", error.message);

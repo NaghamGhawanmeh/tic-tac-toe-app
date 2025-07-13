@@ -368,6 +368,20 @@ const resolvers = {
 
       return populatedGame;
     },
+    updateUserName: async (_, { userId, newUserName }) => {
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { userName: newUserName },
+        { new: true }
+      );
+      if (!user) throw new Error("User not found");
+
+      await pubsub.publish("USER_STATUS_CHANGED", {
+        userStatusChanged: user,
+      });
+
+      return user;
+    },
   },
 
   Subscription: {

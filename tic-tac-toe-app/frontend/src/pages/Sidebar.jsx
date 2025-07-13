@@ -4,6 +4,7 @@ import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../theme";
+import { useQuery, gql } from "@apollo/client";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
@@ -11,12 +12,16 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import GamesOutlinedIcon from "@mui/icons-material/GamesOutlined";
 
-// ✅ هذا الموك داتا - مثلا تقراها من localStorage
-const mockUser = {
-  userName: "PlayerOne",
-  status: "online",
-  score: 5,
-};
+const GET_USER = gql`
+  query GetUserByUsername($userName: String!) {
+    getUserByUsername(userName: $userName) {
+      id
+      userName
+      status
+      score
+    }
+  }
+`;
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -40,6 +45,19 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
 
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const userName = currentUser?.userName;
+
+  const { data, loading, error } = useQuery(GET_USER, {
+    variables: { userName },
+    skip: !userName,
+  });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error loading user info.</div>;
+
+  const user = data?.getUserByUsername;
+
   return (
     <Box
       sx={{
@@ -62,7 +80,6 @@ const Sidebar = () => {
     >
       <ProSidebar collapsed={isCollapsed}>
         <Menu iconShape="square">
-          {/* Menu Icon */}
           <MenuItem
             onClick={() => setIsCollapsed(!isCollapsed)}
             icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
@@ -75,9 +92,6 @@ const Sidebar = () => {
                 alignItems="center"
                 ml="15px"
               >
-                {/* <Typography variant="h3" color={colors.grey[100]}>
-                  GAME MENU
-                </Typography> */}
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
                   <MenuOutlinedIcon />
                 </IconButton>
@@ -85,8 +99,7 @@ const Sidebar = () => {
             )}
           </MenuItem>
 
-          {/* Player Info */}
-          {!isCollapsed && (
+          {!isCollapsed && user && (
             <Box mb="25px">
               <Box display="flex" justifyContent="center" alignItems="center">
                 <img
@@ -103,27 +116,26 @@ const Sidebar = () => {
                   color={colors.grey[100]}
                   fontWeight="bold"
                 >
-                  {mockUser.userName}
+                  {user.userName}
                 </Typography>
                 <Typography variant="body2" color={colors.greenAccent[500]}>
-                  Status: {mockUser.status}
+                  Status: {user.status}
                 </Typography>
                 <Typography variant="body2" color={colors.blueAccent[500]}>
-                  Score: {mockUser.score}
+                  Score: {user.score}
                 </Typography>
               </Box>
             </Box>
           )}
 
-          {/* Menu Items */}
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
-            <Item
+            {/* <Item
               title="Home"
               to="/dashboard"
               icon={<HomeOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
-            />
+            /> */}
             <Item
               title="Players"
               to="/players"

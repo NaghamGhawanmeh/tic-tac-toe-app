@@ -42,6 +42,7 @@ const typeDefs = gql`
     acceptGameRequest(gameId: ID!): Game!
     rejectGameRequest(gameId: ID!): Boolean!
     makeMove(gameId: ID!, x: Int!, y: Int!): Game!
+    updateUserName(userId: ID!, newUserName: String!): User!
   }
 
   type Subscription {
