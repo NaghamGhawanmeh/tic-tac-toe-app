@@ -26,7 +26,7 @@ const typeDefs = gql`
     getPendingRequests(userId: ID!): [Game!]!
     getUserByUsername(userName: String!): User
     getMyGames(userId: ID!): [Game!]!
-    getActiveGames: [Game!]! # 👈 أضف هذا
+    getActiveGames: [Game!]!
   }
 
   type AuthPayload {

@@ -5,7 +5,6 @@ import { ApolloProvider } from "@apollo/client";
 import client from "./apolloClient";
 import { BrowserRouter } from "react-router-dom";
 
-// ✅ هي هون مباشرة
 export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {

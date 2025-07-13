@@ -14,6 +14,8 @@ import {
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
+import { tokens } from "../theme"; // تأكد من المسار
 
 const LOGIN_MUTATION = gql`
   mutation Login($email: String!, $password: String!) {
@@ -67,15 +69,30 @@ const AuthPage = () => {
   const [signup] = useMutation(SIGNUP_MUTATION);
   const navigate = useNavigate();
 
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+
   const handleModeChange = (_, newMode) => {
     if (newMode) setMode(newMode);
   };
 
   return (
-    <Box sx={{ backgroundColor: "#f4f6f8", minHeight: "100vh", py: 6 }}>
+    <Box
+      sx={{
+        backgroundColor: theme.palette.background.default,
+        minHeight: "100vh",
+        py: 6,
+      }}
+    >
       <Container maxWidth="sm">
-        <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-          <CardContent>
+        <Card
+          sx={{
+            borderRadius: 3,
+            boxShadow: 3,
+            backgroundColor: theme.palette.background.paper,
+          }}
+        >
+          <CardContent sx={{ color: theme.palette.text.primary }}>
             <ToggleButtonGroup
               value={mode}
               exclusive
@@ -111,7 +128,7 @@ const AuthPage = () => {
                     alert("Logged in successfully!");
                     navigate("/players");
                   } else {
-                    const res = await signup({ variables: values });
+                    await signup({ variables: values });
                     alert("Registered successfully! You can now log in.");
                     setMode("login");
                   }
@@ -161,8 +178,8 @@ const AuthPage = () => {
                     size="large"
                     sx={{
                       mt: 2,
-                      backgroundColor: "#1976d2",
-                      ":hover": { backgroundColor: "#1565c0" },
+                      backgroundColor: colors.blueAccent[500],
+                      ":hover": { backgroundColor: colors.blueAccent[600] },
                     }}
                     disabled={isSubmitting}
                   >

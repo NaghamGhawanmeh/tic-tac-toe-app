@@ -3,15 +3,13 @@ import { useState, useContext } from "react";
 import { ColorModeContext, tokens } from "../../src/theme";
 // import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import InputBase from "@mui/material/InputBase";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import SearchIcon from "@mui/icons-material/Search";
 import { gql, useMutation } from "@apollo/client";
-import { NotificationContext } from "../index"; // أو المسار اللي حطيت فيه الـ context
+import { NotificationContext } from "../index";
 import Badge from "@mui/material/Badge";
 
 // import { setLogout } from "../../redux/reducers/auth";

@@ -8,9 +8,10 @@ import { ColorModeContext, useMode } from "./theme";
 import { ThemeProvider } from "@emotion/react";
 import { CssBaseline, GlobalStyles } from "@mui/material";
 import "./App.css";
+import Sidebar from "./pages/Sidebar";
 function App() {
   const [theme, colorMode] = useMode();
-
+  const user = localStorage.getItem("token");
   const location = useLocation();
 
   const hideTopbarPaths = ["/"];
@@ -27,7 +28,14 @@ function App() {
             },
           }}
         />
-        <div className="app" style={{ display: "flex" }}>
+        <div
+          className="app"
+          style={{
+            display: "flex",
+            height: "100vh",
+          }}
+        >
+          {user && <Sidebar />}
           <main className="content" style={{ flexGrow: 1 }}>
             {shouldShowTopbar && <Topbar />}
             <Routes>
