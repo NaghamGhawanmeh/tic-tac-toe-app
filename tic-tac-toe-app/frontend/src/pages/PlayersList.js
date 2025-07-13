@@ -74,17 +74,18 @@ const PlayersList = () => {
 
   const { data: playersData, loading, error } = useQuery(GET_PLAYERS);
   const { data: statusData } = useSubscription(USER_STATUS_SUB);
+
   const { data: gamesData } = useQuery(GET_MY_GAMES, {
     variables: { userId: currentUser.id },
     pollInterval: 2000,
   });
+
   const { data: activeGamesData } = useQuery(GET_ACTIVE_GAMES, {
     pollInterval: 2000,
   });
 
   const [requestGame] = useMutation(SEND_REQUEST);
 
-  // ✅ إذا صار في لعبة in_progress بخص هذا اللاعب، انقله مباشرة
   useEffect(() => {
     if (gamesData) {
       const activeGame = gamesData.getMyGames.find(

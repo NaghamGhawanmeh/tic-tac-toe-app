@@ -183,13 +183,11 @@ const resolvers = {
 
       game.status = "in_progress";
 
-      // ✅ تحديث حالة اللاعبين
       await User.findByIdAndUpdate(game.playerX, { status: "playing" });
       await User.findByIdAndUpdate(game.playerO, { status: "playing" });
 
       await game.save();
 
-      // ✅ إرسال تحديثات الحالة (Kafka & pubsub)
       await producer.send({
         topic: "user_status",
         messages: [
@@ -243,9 +241,7 @@ const resolvers = {
       const game = await Game.findById(gameId);
       if (!game) throw new Error("Game not found");
 
-      // ✅ شرط خاص إذا كان تمرير الدور
       if (x === -1 && y === -1) {
-        // مرر التيرن فقط، بدون تعديل البورد
         game.currentTurn = game.currentTurn === "X" ? "O" : "X";
         await game.save();
 
@@ -271,7 +267,6 @@ const resolvers = {
         return populatedGame;
       }
 
-      // ✅ باقي منطق الحركة العادية
       if (game.board[x][y] !== "") throw new Error("Cell already occupied");
 
       const currentSymbol = game.currentTurn;
