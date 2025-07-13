@@ -1,34 +1,45 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Register from "./pages/Register";
 import PlayersList from "./pages/PlayersList";
 import Notifications from "./pages/Notifications";
-import Game from "./pages/Game"; // 💥 أضفنا صفحة اللعب
-
+import Game from "./pages/Game";
+import Topbar from "./pages/Topbar";
+import { ColorModeContext, useMode } from "./theme";
+import { ThemeProvider } from "@emotion/react";
+import { CssBaseline, GlobalStyles } from "@mui/material";
+import "./App.css";
 function App() {
-  return (
-    <Router>
-      <div style={{ margin: "20px" }}>
-        <nav style={{ marginBottom: "20px" }}>
-          <Link to="/" style={{ marginRight: "10px" }}>
-            Register
-          </Link>
-          <Link to="/players" style={{ marginRight: "10px" }}>
-            Players List
-          </Link>
-          <Link to="/notifications" style={{ marginRight: "10px" }}>
-            Notifications
-          </Link>
-        </nav>
+  const [theme, colorMode] = useMode();
 
-        <Routes>
-          <Route path="/" element={<Register />} />
-          <Route path="/players" element={<PlayersList />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/game/:id" element={<Game />} /> {/* ✅ Route للعبة */}
-        </Routes>
-      </div>
-    </Router>
+  const location = useLocation();
+
+  const hideTopbarPaths = ["/"];
+  const shouldShowTopbar = !hideTopbarPaths.includes(location.pathname);
+
+  return (
+    <ColorModeContext.Provider value={colorMode}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <GlobalStyles
+          styles={{
+            ".MuiDataGrid-root": {
+              "--DataGrid-t-header-background-base": "#7075d1",
+            },
+          }}
+        />
+        <div className="app" style={{ display: "flex" }}>
+          <main className="content" style={{ flexGrow: 1 }}>
+            {shouldShowTopbar && <Topbar />}
+            <Routes>
+              <Route path="/" element={<Register />} />
+              <Route path="/players" element={<PlayersList />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/game/:id" element={<Game />} />
+            </Routes>
+          </main>
+        </div>
+      </ThemeProvider>
+    </ColorModeContext.Provider>
   );
 }
 

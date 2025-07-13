@@ -1,9 +1,10 @@
-const { gql } = require("apollo-server-express");
+import { gql } from "apollo-server-express";
 
 const typeDefs = gql`
   type User {
     id: ID!
-    username: String!
+    userName: String!
+    email: String!
     status: String!
     score: Int!
   }
@@ -15,7 +16,7 @@ const typeDefs = gql`
     board: [[String!]!]!
     currentTurn: String!
     status: String!
-    winner: String
+    winner: User
     spectators: [User!]!
   }
 
@@ -23,18 +24,31 @@ const typeDefs = gql`
     getAllPlayers: [User!]!
     getGame(id: ID!): Game
     getPendingRequests(userId: ID!): [Game!]!
-    getUserByUsername(username: String!): User
+    getUserByUsername(userName: String!): User
     getMyGames(userId: ID!): [Game!]!
+    getActiveGames: [Game!]! # 👈 أضف هذا
+  }
+
+  type AuthPayload {
+    token: String!
+    user: User!
   }
 
   type Mutation {
-    registerUser(username: String!): User!
+    signup(userName: String!, email: String!, password: String!): User
+    login(email: String!, password: String!): AuthPayload
     updateUserStatus(userId: ID!, status: String!): User!
     sendGameRequest(fromId: ID!, toId: ID!): Boolean!
     acceptGameRequest(gameId: ID!): Game!
     rejectGameRequest(gameId: ID!): Boolean!
     makeMove(gameId: ID!, x: Int!, y: Int!): Game!
   }
+
+  type Subscription {
+    userStatusChanged: User!
+    gameRequestReceived(userId: ID!): Game!
+    gameUpdated(gameId: ID!): Game!
+  }
 `;
 
-module.exports = typeDefs;
+export default typeDefs;

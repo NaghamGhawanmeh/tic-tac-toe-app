@@ -1,5 +1,4 @@
-// models/Game.js
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const gameSchema = new mongoose.Schema({
   playerX: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
@@ -15,13 +14,12 @@ const gameSchema = new mongoose.Schema({
   currentTurn: { type: String, enum: ["X", "O"], default: "X" },
   status: {
     type: String,
-    enum: ["pending", "waiting", "in_progress", "finished"], // ✅ أضفنا "pending"
+    enum: ["pending", "waiting", "in_progress", "finished", "draw", "rejected"],
     default: "waiting",
   },
-
-  winner: { type: String, enum: ["X", "O", "draw", null], default: null },
+  winner: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   spectators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
 const Game = mongoose.model("Game", gameSchema);
-module.exports = Game;
+export default Game;

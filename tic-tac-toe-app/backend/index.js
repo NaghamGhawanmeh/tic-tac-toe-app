@@ -1,27 +1,45 @@
-// index.js
-const express = require("express");
-const mongoose = require("mongoose");
-const { ApolloServer } = require("apollo-server-express");
-const typeDefs = require("./graphql/schema");
-const resolvers = require("./graphql/resolvers");
-const { producer } = require("./kafka/kafkaClient");
+import express from "express";
+import mongoose from "mongoose";
+import { ApolloServer } from "apollo-server-express";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { createServer } from "http";
+import { WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/use/ws";
+import typeDefs from "./graphql/schema.js";
+import resolvers from "./graphql/resolvers.js";
+import { producer } from "./kafka/kafkaClient.js";
+import cors from "cors";
 
 const startServer = async () => {
   const app = express();
+  app.use(cors());
 
-  // اتصال MongoDB
   await mongoose.connect("mongodb://localhost:27017/tictactoe");
-
-  // Kafka Producer
   await producer.connect();
 
-  const server = new ApolloServer({ typeDefs, resolvers });
-  await server.start();
-  server.applyMiddleware({ app });
+  const schema = makeExecutableSchema({ typeDefs, resolvers });
+  const httpServer = createServer(app);
 
-  app.listen({ port: 4000 }, () => {
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: "/graphql",
+  });
+
+  useServer({ schema }, wsServer);
+
+  const server = new ApolloServer({
+    schema,
+  });
+
+  await server.start();
+  server.applyMiddleware({ app, path: "/graphql" });
+
+  httpServer.listen(4000, () => {
     console.log(
       `🚀 Server ready at http://localhost:4000${server.graphqlPath}`
+    );
+    console.log(
+      `🚀 Subscriptions ready at ws://localhost:4000${server.graphqlPath}`
     );
   });
 };
