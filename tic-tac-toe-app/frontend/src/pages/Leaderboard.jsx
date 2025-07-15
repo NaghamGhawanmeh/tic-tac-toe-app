@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useTheme } from "@mui/material/styles";
-import { tokens } from "../theme"; // تأكد من المسار
+import { tokens } from "../theme";
 
 const GET_PLAYERS = gql`
   query GetAllPlayers {

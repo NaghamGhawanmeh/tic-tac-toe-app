@@ -17,7 +17,7 @@ const typeDefs = gql`
     currentTurn: String!
     status: String!
     winner: User
-    spectators: [User!]!
+    # spectators: [User!]!
   }
 
   type Query {

@@ -18,7 +18,7 @@ const gameSchema = new mongoose.Schema({
     default: "waiting",
   },
   winner: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-  spectators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  // spectators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
 const Game = mongoose.model("Game", gameSchema);

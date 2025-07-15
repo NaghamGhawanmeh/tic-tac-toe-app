@@ -71,23 +71,24 @@ const resolvers = {
   Query: {
     getAllPlayers: async () => await User.find(),
     getGame: async (_, { id }) =>
-      await Game.findById(id).populate("playerX playerO spectators winner"),
+      await Game.findById(id).populate("playerX playerO winner"),
     getPendingRequests: async (_, { userId }) => {
       return await Game.find({
         status: "pending",
         playerO: userId,
-      }).populate("playerX playerO spectators");
+      }).populate("playerX playerO");
     },
+
     getUserByUsername: async (_, { userName }) =>
       await User.findOne({ userName }),
     getMyGames: async (_, { userId }) => {
       return await Game.find({
         $or: [{ playerX: userId }, { playerO: userId }],
-      }).populate("playerX playerO spectators winner");
+      }).populate("playerX playerO winner");
     },
     getActiveGames: async () => {
       return await Game.find({ status: "in_progress" }).populate(
-        "playerX playerO spectators winner"
+        "playerX playerO winner"
       );
     },
   },
@@ -158,7 +159,6 @@ const resolvers = {
           .map(() => Array(3).fill("")),
         currentTurn: "X",
         status: "pending",
-        spectators: [],
       });
 
       await producer.send({
@@ -170,7 +170,7 @@ const resolvers = {
 
       await pubsub.publish(GAME_REQUEST_RECEIVED, {
         gameRequestReceived: await Game.findById(game.id).populate(
-          "playerX playerO spectators"
+          "playerX playerO"
         ),
       });
 
@@ -208,7 +208,7 @@ const resolvers = {
       });
 
       const populatedGame = await Game.findById(gameId).populate(
-        "playerX playerO spectators winner"
+        "playerX playerO winner"
       );
 
       await pubsub.publish(GAME_UPDATED, { gameUpdated: populatedGame });
@@ -230,7 +230,7 @@ const resolvers = {
 
       await pubsub.publish(GAME_UPDATED, {
         gameUpdated: await Game.findById(gameId).populate(
-          "playerX playerO spectators winner"
+          "playerX playerO winner"
         ),
       });
 
@@ -246,7 +246,7 @@ const resolvers = {
         await game.save();
 
         const populatedGame = await Game.findById(gameId).populate(
-          "playerX playerO spectators winner"
+          "playerX playerO winner"
         );
         console.log(
           "🚀 [PASS TURN] Publishing GAME_UPDATED for gameId:",
@@ -331,7 +331,7 @@ const resolvers = {
       await game.save();
 
       const populatedGame = await Game.findById(gameId).populate(
-        "playerX playerO spectators winner"
+        "playerX playerO winner"
       );
       console.log(
         "⭐️ [MOVE] Publishing GAME_UPDATED for gameId:",
