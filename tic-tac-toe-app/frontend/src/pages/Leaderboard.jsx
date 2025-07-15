@@ -3,11 +3,13 @@ import {
   Box,
   Typography,
   Card,
-  CardContent,
-  CircularProgress,
   Chip,
   Stack,
+  CircularProgress,
 } from "@mui/material";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import { useTheme } from "@mui/material/styles";
+import { tokens } from "../theme"; // تأكد من المسار
 
 const GET_PLAYERS = gql`
   query GetAllPlayers {
@@ -20,7 +22,12 @@ const GET_PLAYERS = gql`
   }
 `;
 
+const medalColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
+
 const Leaderboard = () => {
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+
   const { data, loading, error } = useQuery(GET_PLAYERS);
 
   if (loading) return <CircularProgress />;
@@ -34,69 +41,78 @@ const Leaderboard = () => {
     <Box m={4}>
       <Typography
         variant="h3"
-        mb={3}
+        mb={4}
         sx={{
           fontWeight: "bold",
-          background: "linear-gradient(90deg, #4cceac, #6870fa)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          color: colors.greenAccent[500],
         }}
       >
         Leaderboard
       </Typography>
 
-      {sortedPlayers.map((player, index) => (
-        <Card
-          key={player.id}
-          sx={{
-            mb: 3,
-            background: "linear-gradient(135deg, #1f2a40, #3a3f58)",
-            color: "#fff",
-            borderRadius: "16px",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-            transition: "transform 0.3s, box-shadow 0.3s",
-            "&:hover": {
-              transform: "translateY(-5px)",
-              boxShadow: "0 16px 32px rgba(0,0,0,0.5)",
-            },
-          }}
-        >
-          <CardContent>
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              justifyContent="space-between"
-              alignItems="center"
-              spacing={2}
+      <Stack spacing={3}>
+        {sortedPlayers.map((player, index) => (
+          <Card
+            key={player.id}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              p: 2,
+              backgroundColor: colors.primary[400],
+              color: colors.grey[100],
+              borderRadius: "16px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              transition: "transform 0.3s, box-shadow 0.3s",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 24px rgba(0,0,0,0.4)",
+              },
+            }}
+          >
+            {/* Medal or Rank */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 60,
+                height: 60,
+                borderRadius: "50%",
+                backgroundColor:
+                  index < 3 ? medalColors[index] : colors.grey[600],
+                color: index < 3 ? "#000" : colors.grey[100],
+                mr: 2,
+                fontWeight: "bold",
+              }}
             >
-              <Box>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: "bold",
-                    mb: 1,
-                  }}
-                >
-                  #{index + 1} - {player.userName}
-                </Typography>
-                <Typography>Score: {player.score}</Typography>
-              </Box>
+              {index < 3 ? (
+                <EmojiEventsIcon sx={{ fontSize: 30 }} />
+              ) : (
+                <Typography variant="h6">#{index + 1}</Typography>
+              )}
+            </Box>
 
-              <Chip
-                label={player.status.toUpperCase()}
-                sx={{
-                  backgroundColor:
-                    player.status === "online" ? "#4cceac" : "#db4f4a",
-                  color: "#fff",
-                  fontWeight: "bold",
-                  px: 2,
-                  py: 1,
-                  fontSize: "0.9rem",
-                }}
-              />
-            </Stack>
-          </CardContent>
-        </Card>
-      ))}
+            <Box flexGrow={1}>
+              <Typography variant="h5" fontWeight="bold" sx={{ mb: 0.5 }}>
+                {player.userName}
+              </Typography>
+              <Typography>Score: {player.score}</Typography>
+            </Box>
+
+            <Chip
+              label={player.status.toUpperCase()}
+              sx={{
+                backgroundColor:
+                  player.status === "online"
+                    ? colors.greenAccent[500]
+                    : colors.redAccent[500],
+                color: "#fff",
+                fontWeight: "bold",
+              }}
+            />
+          </Card>
+        ))}
+      </Stack>
     </Box>
   );
 };

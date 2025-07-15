@@ -1,12 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useQuery, useSubscription, useMutation, gql } from "@apollo/client";
-import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  CircularProgress,
-} from "@mui/material";
+import { Box, Typography, Button, Paper } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { tokens } from "../theme";
 import { useNavigate, useParams } from "react-router-dom";
@@ -79,12 +73,21 @@ const Game = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  const { data, loading, error, refetch } = useQuery(GET_GAME, {
+  console.log("🚀 [FRONTEND] Subscribing with gameId:", id);
+
+  const { data, loading, error } = useQuery(GET_GAME, {
     variables: { id },
   });
 
   const { data: subData } = useSubscription(GAME_UPDATED_SUB, {
     variables: { gameId: id },
+    skip: !id, // ✅ لمنع إعادة الاشتراك كل مرة بدون سبب
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log(
+        "🔥 [FRONTEND] Received subscription data:",
+        subscriptionData
+      );
+    },
   });
 
   const [makeMove] = useMutation(MAKE_MOVE);
@@ -111,7 +114,6 @@ const Game = () => {
           if (prev === 1) {
             clearInterval(intervalRef.current);
             if (isMyTurn) {
-              // Pass turn without move
               makeMove({ variables: { gameId: id, x: -1, y: -1 } });
             }
           }
@@ -122,10 +124,6 @@ const Game = () => {
 
     return () => clearInterval(intervalRef.current);
   }, [game?.currentTurn]);
-
-  useEffect(() => {
-    refetch();
-  }, [subData, refetch]);
 
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography>Error: {error.message}</Typography>;

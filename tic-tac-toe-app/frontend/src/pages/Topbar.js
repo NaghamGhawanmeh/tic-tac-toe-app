@@ -14,7 +14,7 @@ import Badge from "@mui/material/Badge";
 
 // import { setLogout } from "../../redux/reducers/auth";
 
-const Topbar = () => {
+const Topbar = ({ setToken, setCurrentUser }) => {
   const { pendingCount } = useContext(NotificationContext);
 
   const theme = useTheme();
@@ -54,11 +54,15 @@ const Topbar = () => {
 
       localStorage.removeItem("currentUser");
       localStorage.removeItem("token");
+      setToken(null); // ✅ أضف هذا السطر
+      setToken(null);
+      setCurrentUser(null);
       navigate("/");
     } catch (error) {
       console.error("Error updating status:", error.message);
     }
   };
+
   return (
     <Box display="flex" justifyContent="space-between" p={2}>
       {/* SEARCH BAR */}

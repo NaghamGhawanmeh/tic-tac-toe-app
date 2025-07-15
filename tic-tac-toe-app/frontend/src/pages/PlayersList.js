@@ -71,12 +71,44 @@ const PlayersList = () => {
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const userId = currentUser?.id;
 
-  const { data: playersData, loading, error } = useQuery(GET_PLAYERS);
-  const { data: statusData } = useSubscription(USER_STATUS_SUB);
+  const {
+    data: playersData,
+    loading,
+    error,
+    refetch,
+  } = useQuery(GET_PLAYERS, {
+    fetchPolicy: "network-only",
+  });
+
+  const { data: statusData } = useSubscription(USER_STATUS_SUB, {
+    onSubscriptionData: ({ client, subscriptionData }) => {
+      const updatedPlayer = subscriptionData.data.userStatusChanged;
+
+      client.writeFragment({
+        id: client.cache.identify(updatedPlayer),
+        fragment: gql`
+          fragment PlayerStatus on User {
+            id
+            status
+            score
+          }
+        `,
+        data: {
+          id: updatedPlayer.id,
+          status: updatedPlayer.status,
+          score: updatedPlayer.score,
+        },
+      });
+
+      refetch();
+    },
+  });
 
   const { data: gamesData } = useQuery(GET_MY_GAMES, {
-    variables: { userId: currentUser.id },
+    variables: { userId },
+    skip: !userId, // ✅ نتأكد ما يشتغل إلا إذا موجود userId
     pollInterval: 2000,
   });
 
@@ -95,7 +127,16 @@ const PlayersList = () => {
         navigate(`/game/${activeGame.id}`);
       }
     }
-  }, [gamesData, navigate]);
+    refetch();
+  }, [gamesData, navigate, refetch]);
+
+  if (!currentUser) {
+    return (
+      <Typography variant="h6" mt={4} textAlign="center">
+        Please login first.
+      </Typography>
+    );
+  }
 
   if (loading) return <CircularProgress />;
   if (error) return <Typography>Error: {error.message}</Typography>;

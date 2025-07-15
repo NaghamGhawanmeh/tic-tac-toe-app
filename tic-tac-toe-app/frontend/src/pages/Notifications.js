@@ -83,7 +83,7 @@ const Notifications = () => {
       setPendingCount(1);
     }
   }, [subData, refetch, setPendingCount]);
-
+  // no need for useEffect
   if (!currentUserId) {
     return (
       <Typography variant="h6" mt={4}>

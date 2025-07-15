@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation, gql } from "@apollo/client";
 import {
   Container,
@@ -15,7 +15,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
-import { tokens } from "../theme"; // تأكد من المسار
+import { tokens } from "../theme";
 
 const LOGIN_MUTATION = gql`
   mutation Login($email: String!, $password: String!) {
@@ -63,7 +63,7 @@ const RegisterSchema = Yup.object().shape({
     .required("Password is required"),
 });
 
-const AuthPage = () => {
+const AuthPage = ({ setToken }) => {
   const [mode, setMode] = useState("login");
   const [login] = useMutation(LOGIN_MUTATION);
   const [signup] = useMutation(SIGNUP_MUTATION);
@@ -125,6 +125,7 @@ const AuthPage = () => {
                     const { token, user } = res.data.login;
                     localStorage.setItem("token", token);
                     localStorage.setItem("currentUser", JSON.stringify(user));
+                    setToken(token); // ✅ تحدث الـ state مباشرة
                     alert("Logged in successfully!");
                     navigate("/players");
                   } else {

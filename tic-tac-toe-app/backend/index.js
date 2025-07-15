@@ -9,6 +9,18 @@ import typeDefs from "./graphql/schema.js";
 import resolvers from "./graphql/resolvers.js";
 import { producer } from "./kafka/kafkaClient.js";
 import cors from "cors";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+if (process.argv[1] !== __filename) {
+  console.log(
+    "Skipping API server startup because this file was imported elsewhere"
+  );
+  process.exit();
+}
 
 const startServer = async () => {
   const app = express();

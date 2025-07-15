@@ -100,31 +100,67 @@ const Sidebar = () => {
           </MenuItem>
 
           {!isCollapsed && user && (
-            <Box mb="25px">
-              <Box display="flex" justifyContent="center" alignItems="center">
+            <Box
+              mb="25px"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+            >
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                sx={{
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  width: "100px",
+                  height: "100px",
+                  boxShadow: `0 0 15px ${colors.primary[600]}`,
+                  border: `3px solid ${colors.greenAccent[500]}`,
+                  mb: 2,
+                }}
+              >
                 <img
                   alt="profile-user"
-                  width="80px"
-                  height="80px"
                   src="https://promoteur.angem.dz/images/service/user.png"
-                  style={{ cursor: "pointer", borderRadius: "50%" }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
                 />
               </Box>
-              <Box textAlign="center" mt="10px">
-                <Typography
-                  variant="h4"
-                  color={colors.grey[100]}
-                  fontWeight="bold"
-                >
-                  {user.userName}
-                </Typography>
-                <Typography variant="body2" color={colors.greenAccent[500]}>
-                  Status: {user.status}
-                </Typography>
-                <Typography variant="body2" color={colors.blueAccent[500]}>
-                  Score: {user.score}
-                </Typography>
-              </Box>
+
+              <Typography
+                variant="h4"
+                color={colors.grey[100]}
+                fontWeight="bold"
+                textAlign="center"
+              >
+                {user.userName}
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  color:
+                    user.status === "online"
+                      ? colors.greenAccent[500]
+                      : colors.redAccent[500],
+                  fontWeight: "medium",
+                  mt: "5px",
+                }}
+              >
+                {user.status === "online" ? "🟢 Online" : "🔴 Playing"}
+              </Typography>
+
+              <Typography
+                variant="body2"
+                color={colors.blueAccent[500]}
+                sx={{ mt: "5px" }}
+              >
+                Score: <strong>{user.score}</strong>
+              </Typography>
             </Box>
           )}
 

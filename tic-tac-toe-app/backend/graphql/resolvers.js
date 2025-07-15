@@ -1,4 +1,4 @@
-import { PubSub } from "graphql-subscriptions";
+import { PubSub, withFilter } from "graphql-subscriptions";
 import User from "../models/User.js";
 import Game from "../models/Game.js";
 import { producer } from "../kafka/kafkaClient.js";
@@ -126,16 +126,16 @@ const resolvers = {
           { value: JSON.stringify({ userId: user._id, status: "online" }) },
         ],
       });
-
+      await pubsub.publish("USER_STATUS_CHANGED", {
+        userStatusChanged: await User.findById(user._id),
+      });
       return { token, user };
     },
 
     updateUserStatus: async (_, { userId, status }) => {
-      const user = await User.findByIdAndUpdate(
-        userId,
-        { status },
-        { new: true }
-      );
+      const user = await User.findByIdAndUpdate(userId, { status });
+
+      if (!user) throw new Error("User not found");
 
       await producer.send({
         topic: "user_status",
@@ -143,7 +143,7 @@ const resolvers = {
       });
 
       await pubsub.publish("USER_STATUS_CHANGED", {
-        userStatusChanged: user,
+        userStatusChanged: await User.findById(userId),
       });
 
       return user;
@@ -245,25 +245,15 @@ const resolvers = {
         game.currentTurn = game.currentTurn === "X" ? "O" : "X";
         await game.save();
 
-        await producer.send({
-          topic: "game_updates",
-          messages: [
-            {
-              value: JSON.stringify({
-                gameId,
-                board: game.board,
-                status: game.status,
-              }),
-            },
-          ],
-        });
-
         const populatedGame = await Game.findById(gameId).populate(
           "playerX playerO spectators winner"
         );
+        console.log(
+          "🚀 [PASS TURN] Publishing GAME_UPDATED for gameId:",
+          populatedGame._id.toString()
+        );
 
         await pubsub.publish("GAME_UPDATED", { gameUpdated: populatedGame });
-
         return populatedGame;
       }
 
@@ -276,9 +266,9 @@ const resolvers = {
 
       if (winner) {
         game.status = "finished";
-
         if (winner === "X") {
           game.winner = game.playerX;
+
           await User.findByIdAndUpdate(game.playerX, {
             $inc: { score: 1 },
             status: "online",
@@ -286,9 +276,20 @@ const resolvers = {
           await User.findByIdAndUpdate(game.playerO, {
             $inc: { score: -1 },
             status: "online",
+          });
+
+          const updatedPlayerX = await User.findById(game.playerX);
+          const updatedPlayerO = await User.findById(game.playerO);
+
+          await pubsub.publish("USER_STATUS_CHANGED", {
+            userStatusChanged: updatedPlayerX,
+          });
+          await pubsub.publish("USER_STATUS_CHANGED", {
+            userStatusChanged: updatedPlayerO,
           });
         } else if (winner === "O") {
           game.winner = game.playerO;
+
           await User.findByIdAndUpdate(game.playerO, {
             $inc: { score: 1 },
             status: "online",
@@ -297,49 +298,31 @@ const resolvers = {
             $inc: { score: -1 },
             status: "online",
           });
+
+          const updatedPlayerO = await User.findById(game.playerO);
+          const updatedPlayerX = await User.findById(game.playerX);
+
+          await pubsub.publish("USER_STATUS_CHANGED", {
+            userStatusChanged: updatedPlayerO,
+          });
+          await pubsub.publish("USER_STATUS_CHANGED", {
+            userStatusChanged: updatedPlayerX,
+          });
         }
-
-        await producer.send({
-          topic: "user_status",
-          messages: [
-            {
-              value: JSON.stringify({ userId: game.playerX, status: "online" }),
-            },
-            {
-              value: JSON.stringify({ userId: game.playerO, status: "online" }),
-            },
-          ],
-        });
-
-        await pubsub.publish("USER_STATUS_CHANGED", {
-          userStatusChanged: await User.findById(game.playerX),
-        });
-        await pubsub.publish("USER_STATUS_CHANGED", {
-          userStatusChanged: await User.findById(game.playerO),
-        });
       } else if (game.board.flat().every((cell) => cell !== "")) {
         game.status = "draw";
 
         await User.findByIdAndUpdate(game.playerX, { status: "online" });
         await User.findByIdAndUpdate(game.playerO, { status: "online" });
 
-        await producer.send({
-          topic: "user_status",
-          messages: [
-            {
-              value: JSON.stringify({ userId: game.playerX, status: "online" }),
-            },
-            {
-              value: JSON.stringify({ userId: game.playerO, status: "online" }),
-            },
-          ],
-        });
+        const updatedPlayerX = await User.findById(game.playerX);
+        const updatedPlayerO = await User.findById(game.playerO);
 
         await pubsub.publish("USER_STATUS_CHANGED", {
-          userStatusChanged: await User.findById(game.playerX),
+          userStatusChanged: updatedPlayerX,
         });
         await pubsub.publish("USER_STATUS_CHANGED", {
-          userStatusChanged: await User.findById(game.playerO),
+          userStatusChanged: updatedPlayerO,
         });
       } else {
         game.currentTurn = currentSymbol === "X" ? "O" : "X";
@@ -347,27 +330,19 @@ const resolvers = {
 
       await game.save();
 
-      await producer.send({
-        topic: "game_updates",
-        messages: [
-          {
-            value: JSON.stringify({
-              gameId,
-              board: game.board,
-              status: game.status,
-            }),
-          },
-        ],
-      });
-
       const populatedGame = await Game.findById(gameId).populate(
         "playerX playerO spectators winner"
+      );
+      console.log(
+        "⭐️ [MOVE] Publishing GAME_UPDATED for gameId:",
+        populatedGame._id.toString()
       );
 
       await pubsub.publish("GAME_UPDATED", { gameUpdated: populatedGame });
 
       return populatedGame;
     },
+
     updateUserName: async (_, { userId, newUserName }) => {
       const user = await User.findByIdAndUpdate(
         userId,
@@ -386,11 +361,25 @@ const resolvers = {
 
   Subscription: {
     gameRequestReceived: {
-      subscribe: (_, { userId }) =>
-        pubsub.asyncIterableIterator(GAME_REQUEST_RECEIVED),
+      subscribe: withFilter(
+        () => pubsub.asyncIterableIterator(GAME_REQUEST_RECEIVED),
+        (payload, variables) => {
+          return (
+            String(payload.gameRequestReceived.playerO._id) ===
+            String(variables.userId)
+          );
+        }
+      ),
     },
+
     gameUpdated: {
-      subscribe: (_, { gameId }) => pubsub.asyncIterableIterator(GAME_UPDATED),
+      subscribe: withFilter(
+        () => pubsub.asyncIterableIterator(GAME_UPDATED),
+        (payload, variables) => {
+          console.log("⚡ FILTER CHECK:", variables);
+          return String(payload.gameUpdated.id) === String(variables.gameId);
+        }
+      ),
     },
     userStatusChanged: {
       subscribe: () => pubsub.asyncIterableIterator("USER_STATUS_CHANGED"),

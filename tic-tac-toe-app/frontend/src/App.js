@@ -15,6 +15,7 @@ import Settings from "./pages/Settings ";
 import { NotificationContext } from "./index";
 import { useContext, useEffect } from "react";
 import { useSubscription, gql } from "@apollo/client";
+import { useState } from "react";
 
 const GAME_REQUEST_SUB = gql`
   subscription OnGameRequest($userId: ID!) {
@@ -26,8 +27,11 @@ const GAME_REQUEST_SUB = gql`
 
 function App() {
   const [theme, colorMode] = useMode();
-  const token = localStorage.getItem("token");
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  // const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const [currentUser, setCurrentUser] = useState(
+    JSON.parse(localStorage.getItem("currentUser"))
+  );
 
   const { setPendingCount } = useContext(NotificationContext);
 
@@ -62,9 +66,9 @@ function App() {
         >
           {token && <Sidebar />}
           <main className="content" style={{ flexGrow: 1 }}>
-            <Topbar />
+            <Topbar setToken={setToken} setCurrentUser={setCurrentUser} />
             <Routes>
-              <Route path="/" element={<Register />} />
+              <Route path="/" element={<Register setToken={setToken} />} />
               <Route path="/players" element={<PlayersList />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/game/:id" element={<Game />} />
