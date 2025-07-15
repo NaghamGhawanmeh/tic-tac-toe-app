@@ -13,9 +13,9 @@ import Leaderboard from "./pages/Leaderboard";
 import MyGames from "./pages/MyGames";
 import Settings from "./pages/Settings ";
 import { NotificationContext } from "./index";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useSubscription, gql } from "@apollo/client";
-import { useState } from "react";
+import ProtectedRoute from "./pages/ProtectedRoute";
 
 const GAME_REQUEST_SUB = gql`
   subscription OnGameRequest($userId: ID!) {
@@ -28,7 +28,6 @@ const GAME_REQUEST_SUB = gql`
 function App() {
   const [theme, colorMode] = useMode();
   const [token, setToken] = useState(localStorage.getItem("token"));
-  // const currentUser = JSON.parse(localStorage.getItem("currentUser"));
   const [currentUser, setCurrentUser] = useState(
     JSON.parse(localStorage.getItem("currentUser"))
   );
@@ -69,12 +68,60 @@ function App() {
             <Topbar setToken={setToken} setCurrentUser={setCurrentUser} />
             <Routes>
               <Route path="/" element={<Register setToken={setToken} />} />
-              <Route path="/players" element={<PlayersList />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/game/:id" element={<Game />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
-              <Route path="/my-games" element={<MyGames />} />
-              <Route path="/settings" element={<Settings />} />
+
+              <Route
+                path="/players"
+                element={
+                  <ProtectedRoute token={token}>
+                    <PlayersList />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute token={token}>
+                    <Notifications />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/game/:id"
+                element={
+                  <ProtectedRoute token={token}>
+                    <Game />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/leaderboard"
+                element={
+                  <ProtectedRoute token={token}>
+                    <Leaderboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/my-games"
+                element={
+                  <ProtectedRoute token={token}>
+                    <MyGames />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute token={token}>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </main>
         </div>
