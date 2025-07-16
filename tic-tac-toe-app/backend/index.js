@@ -11,6 +11,9 @@ import { producer } from "./kafka/kafkaClient.js";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import "./kafka/userStatusConsumer.js";
+import "./kafka/gameRequestsConsumer.js";
+import "./kafka/gameUpdatesConsumer.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

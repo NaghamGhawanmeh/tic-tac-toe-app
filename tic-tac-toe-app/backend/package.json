@@ -5,12 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "start": "node index.js",
-    "start:userStatus": "nodemon kafka/userStatusConsumer.js",
-    "start:gameRequests": "nodemon kafka/gameRequestsConsumer.js",
-    "start:gameUpdates": "nodemon kafka/gameUpdatesConsumer.js",
-    "start:allConsumers": "concurrently \"npm run start:userStatus\" \"npm run start:gameRequests\" \"npm run start:gameUpdates\""
-
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
