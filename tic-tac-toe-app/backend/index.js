@@ -30,7 +30,7 @@ const startServer = async () => {
   app.use(cors());
 
   await mongoose.connect(
-    "mongodb+srv://Nagham:bHPNJ9t1R8hbEyuj@cluster0.awpem.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    "mongodb+srv://Naghamm:UPTYCPuG42wjyqDz@cluster0.awpem.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
   );
   // await producer.connect();
 
