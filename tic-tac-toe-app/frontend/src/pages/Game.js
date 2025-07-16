@@ -102,12 +102,10 @@ const Game = () => {
   const isMyTurn =
     (isPlayerX && game?.currentTurn === "X") ||
     (isPlayerO && game?.currentTurn === "O");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (game && game.status === "in_progress") {
       setTimer(10);
-
       clearInterval(intervalRef.current);
 
       intervalRef.current = setInterval(() => {
@@ -124,12 +122,12 @@ const Game = () => {
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [game?.currentTurn]);
+  }, [game, id, isMyTurn, makeMove]);
 
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography>Error: {error.message}</Typography>;
   if (!game) return <Typography>Game not found</Typography>;
-
+  // /
   const handleMove = async (x, y) => {
     try {
       await makeMove({ variables: { gameId: id, x, y } });
