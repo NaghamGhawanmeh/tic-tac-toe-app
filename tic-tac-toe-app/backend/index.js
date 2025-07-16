@@ -27,7 +27,14 @@ if (process.argv[1] !== __filename) {
 
 const startServer = async () => {
   const app = express();
-  app.use(cors());
+
+  // ✅ إعداد CORS للسماح من Netlify
+  app.use(
+    cors({
+      origin: ["https://tictactoe556.netlify.app"],
+      credentials: true,
+    })
+  );
 
   await mongoose.connect(
     "mongodb+srv://Naghamm:UPTYCPuG42wjyqDz@cluster0.awpem.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
