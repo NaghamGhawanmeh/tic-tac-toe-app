@@ -1,7 +1,7 @@
 import { PubSub, withFilter } from "graphql-subscriptions";
 import User from "../models/User.js";
 import Game from "../models/Game.js";
-import { producer } from "../kafka/kafkaClient.js";
+// import { producer } from "../kafka/kafkaClient.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 const JWT_SECRET = "supersecret_key";
@@ -121,12 +121,12 @@ const resolvers = {
       user.status = "online";
       await user.save();
 
-      await producer.send({
-        topic: "user_status",
-        messages: [
-          { value: JSON.stringify({ userId: user._id, status: "online" }) },
-        ],
-      });
+      // await producer.send({
+      //   topic: "user_status",
+      //   messages: [
+      //     { value: JSON.stringify({ userId: user._id, status: "online" }) },
+      //   ],
+      // });
       await pubsub.publish("USER_STATUS_CHANGED", {
         userStatusChanged: await User.findById(user._id),
       });
@@ -138,10 +138,10 @@ const resolvers = {
 
       if (!user) throw new Error("User not found");
 
-      await producer.send({
-        topic: "user_status",
-        messages: [{ value: JSON.stringify({ userId, status }) }],
-      });
+      // await producer.send({
+      //   topic: "user_status",
+      //   messages: [{ value: JSON.stringify({ userId, status }) }],
+      // });
 
       await pubsub.publish("USER_STATUS_CHANGED", {
         userStatusChanged: await User.findById(userId),
@@ -161,12 +161,12 @@ const resolvers = {
         status: "pending",
       });
 
-      await producer.send({
-        topic: "game_requests",
-        messages: [
-          { value: JSON.stringify({ gameId: game.id, fromId, toId }) },
-        ],
-      });
+      // await producer.send({
+      //   topic: "game_requests",
+      //   messages: [
+      //     { value: JSON.stringify({ gameId: game.id, fromId, toId }) },
+      //   ],
+      // });
 
       await pubsub.publish(GAME_REQUEST_RECEIVED, {
         gameRequestReceived: await Game.findById(game.id).populate(
@@ -188,17 +188,17 @@ const resolvers = {
 
       await game.save();
 
-      await producer.send({
-        topic: "user_status",
-        messages: [
-          {
-            value: JSON.stringify({ userId: game.playerX, status: "playing" }),
-          },
-          {
-            value: JSON.stringify({ userId: game.playerO, status: "playing" }),
-          },
-        ],
-      });
+      // await producer.send({
+      //   topic: "user_status",
+      //   messages: [
+      //     {
+      //       value: JSON.stringify({ userId: game.playerX, status: "playing" }),
+      //     },
+      //     {
+      //       value: JSON.stringify({ userId: game.playerO, status: "playing" }),
+      //     },
+      //   ],
+      // });
 
       await pubsub.publish("USER_STATUS_CHANGED", {
         userStatusChanged: await User.findById(game.playerX),
@@ -223,10 +223,10 @@ const resolvers = {
       game.status = "rejected";
       await game.save();
 
-      await producer.send({
-        topic: "game_requests",
-        messages: [{ value: JSON.stringify({ gameId, rejected: true }) }],
-      });
+      // await producer.send({
+      //   topic: "game_requests",
+      //   messages: [{ value: JSON.stringify({ gameId, rejected: true }) }],
+      // });
 
       await pubsub.publish(GAME_UPDATED, {
         gameUpdated: await Game.findById(gameId).populate(

@@ -7,13 +7,13 @@ import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
 import typeDefs from "./graphql/schema.js";
 import resolvers from "./graphql/resolvers.js";
-import { producer } from "./kafka/kafkaClient.js";
+// import { producer } from "./kafka/kafkaClient.js";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import "./kafka/userStatusConsumer.js";
-import "./kafka/gameRequestsConsumer.js";
-import "./kafka/gameUpdatesConsumer.js";
+// import "./kafka/userStatusConsumer.js";
+// import "./kafka/gameRequestsConsumer.js";
+// import "./kafka/gameUpdatesConsumer.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,7 +30,7 @@ const startServer = async () => {
   app.use(cors());
 
   await mongoose.connect("mongodb://localhost:27017/tictactoe");
-  await producer.connect();
+  // await producer.connect();
 
   const schema = makeExecutableSchema({ typeDefs, resolvers });
   const httpServer = createServer(app);
