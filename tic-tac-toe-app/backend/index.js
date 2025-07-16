@@ -29,7 +29,9 @@ const startServer = async () => {
   const app = express();
   app.use(cors());
 
-  await mongoose.connect("mongodb://localhost:27017/tictactoe");
+  await mongoose.connect(
+    "mongodb+srv://Nagham:bHPNJ9t1R8hbEyuj@cluster0.awpem.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  );
   // await producer.connect();
 
   const schema = makeExecutableSchema({ typeDefs, resolvers });
