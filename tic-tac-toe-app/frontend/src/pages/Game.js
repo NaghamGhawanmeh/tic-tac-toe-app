@@ -102,6 +102,7 @@ const Game = () => {
   const isMyTurn =
     (isPlayerX && game?.currentTurn === "X") ||
     (isPlayerO && game?.currentTurn === "O");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (game && game.status === "in_progress") {
